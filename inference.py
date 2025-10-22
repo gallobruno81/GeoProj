@@ -37,18 +37,38 @@ def load_models(model_dir='models', use_gpu=True):
         print(f"\nPlace the .pkl files in the '{model_dir}/' directory")
         exit(1)
     
+    # Load state dicts
+    if use_gpu and torch.cuda.is_available():
+        state_dict_en = torch.load(model_en_path)
+        state_dict_de = torch.load(model_de_path)
+        state_dict_class = torch.load(model_class_path)
+    else:
+        state_dict_en = torch.load(model_en_path, map_location='cpu')
+        state_dict_de = torch.load(model_de_path, map_location='cpu')
+        state_dict_class = torch.load(model_class_path, map_location='cpu')
+    
+    # Remove 'module.' prefix if present (from DataParallel training)
+    def remove_module_prefix(state_dict):
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            name = k[7:] if k.startswith('module.') else k  # remove 'module.' prefix
+            new_state_dict[name] = v
+        return new_state_dict
+    
+    state_dict_en = remove_module_prefix(state_dict_en)
+    state_dict_de = remove_module_prefix(state_dict_de)
+    state_dict_class = remove_module_prefix(state_dict_class)
+    
+    # Load cleaned state dicts
+    model_en.load_state_dict(state_dict_en)
+    model_de.load_state_dict(state_dict_de)
+    model_class.load_state_dict(state_dict_class)
+    
+    # Move to GPU if available
     if use_gpu and torch.cuda.is_available():
         model_en = model_en.cuda()
         model_de = model_de.cuda()
         model_class = model_class.cuda()
-        
-        model_en.load_state_dict(torch.load(model_en_path))
-        model_de.load_state_dict(torch.load(model_de_path))
-        model_class.load_state_dict(torch.load(model_class_path))
-    else:
-        model_en.load_state_dict(torch.load(model_en_path, map_location='cpu'))
-        model_de.load_state_dict(torch.load(model_de_path, map_location='cpu'))
-        model_class.load_state_dict(torch.load(model_class_path, map_location='cpu'))
     
     model_en.eval()
     model_de.eval()
