@@ -10,12 +10,19 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import cv2
 
-def rectify_image_hd(img_path, flow_path, output_dir='results'):
-    """Apply rectification at original resolution using OpenCV"""
+def rectify_image_hd(img_path, flow_path, output_dir='results', flow_scale=1.0):
+    """Apply rectification at original resolution using OpenCV
+    
+    Args:
+        flow_scale: Factor to scale the correction intensity (1.0=normal, 2.0=double, 0.5=half)
+    """
     
     print(f"\n{'='*60}")
     print("HD Rectification (CPU-based with OpenCV)")
-    print(f"{'='*60}\n")
+    print(f"{'='*60}")
+    if flow_scale != 1.0:
+        print(f"⚙️ Correction scale: {flow_scale}x")
+    print()
     
     # Load image and flow
     print("Loading image and flow...")
@@ -36,10 +43,10 @@ def rectify_image_hd(img_path, flow_path, output_dir='results'):
     print("\nCreating coordinate grids...")
     y_coords, x_coords = np.mgrid[0:h, 0:w].astype(np.float32)
     
-    # Apply flow to get source coordinates
+    # Apply flow to get source coordinates (with scaling)
     # Flow is in image coordinates (x, y)
-    src_x = x_coords + flow[0]  # Add horizontal flow
-    src_y = y_coords + flow[1]  # Add vertical flow
+    src_x = x_coords + flow[0] * flow_scale  # Add horizontal flow (scaled)
+    src_y = y_coords + flow[1] * flow_scale  # Add vertical flow (scaled)
     
     # Rectify using OpenCV remap (much faster than manual interpolation)
     print("Applying rectification...")
@@ -130,6 +137,7 @@ def main():
     parser.add_argument('--img_path', type=str, required=True, help='Path to distorted image')
     parser.add_argument('--flow_path', type=str, required=True, help='Path to flow .npy file')
     parser.add_argument('--output_dir', type=str, default='results', help='Output directory')
+    parser.add_argument('--flow_scale', type=float, default=1.0, help='Scale factor for correction intensity (default: 1.0, try 1.5 or 2.0 for stronger correction)')
     
     args = parser.parse_args()
     
@@ -141,9 +149,10 @@ def main():
     print(f"Input image: {args.img_path}")
     print(f"Flow file: {args.flow_path}")
     print(f"Output: {args.output_dir}")
+    print(f"Correction scale: {args.flow_scale}x")
     print(f"{'='*60}\n")
     
-    rectify_image_hd(args.img_path, args.flow_path, args.output_dir)
+    rectify_image_hd(args.img_path, args.flow_path, args.output_dir, args.flow_scale)
     
     print(f"\n{'='*60}")
     print("✓ HD Rectification complete!")
