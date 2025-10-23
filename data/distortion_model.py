@@ -5,7 +5,7 @@ def distortionParameter(types):
     parameters = []
     
     if (types == 'barrel'):
-        Lambda = np.random.random_sample( )* -5e-5/4
+        Lambda = np.random.random_sample( )* -5e-5/2  # 2x más fuerte
         x0 = 256
         y0 = 256
         parameters.append(Lambda)
@@ -14,7 +14,7 @@ def distortionParameter(types):
         return parameters
     
     elif (types == 'pincushion'):
-        Lambda = np.random.random_sample() * 8.6e-5/4
+        Lambda = np.random.random_sample() * 8.6e-5/2  # 2x más fuerte
         x0 = 128
         y0 = 128
         parameters.append(Lambda)
@@ -23,7 +23,7 @@ def distortionParameter(types):
         return parameters
     
     elif (types == 'rotation'):
-        theta = np.random.random_sample() * 30 - 15   
+        theta = np.random.random_sample() * 60 - 30  # 2x más fuerte (±30°)
         radian = math.pi*theta/180
         sina = math.sin(radian)
         cosa = math.cos(radian)
@@ -32,14 +32,14 @@ def distortionParameter(types):
         return parameters
     
     elif (types == 'shear'):
-        shear = np.random.random_sample() * 0.8 - 0.4
+        shear = np.random.random_sample() * 1.6 - 0.8  # 2x más fuerte (±0.8)
         parameters.append(shear)
         return parameters
 
     elif (types == 'projective'):
     
         x1 = 0
-        x4 = np.random.random_sample()* 0.1 + 0.1
+        x4 = np.random.random_sample()* 0.2 + 0.2  # 2x más fuerte
 
         x2 = 1 - x1
         x3 = 1 - x4
@@ -71,7 +71,7 @@ def distortionParameter(types):
         return parameters
     
     elif (types == 'wave'):
-        mag = np.random.random_sample() * 32
+        mag = np.random.random_sample() * 64  # 2x más fuerte (64 píxeles)
         parameters.append(mag)
         return parameters
 
